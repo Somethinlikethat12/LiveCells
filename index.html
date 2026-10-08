@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Butcher Vanity: The Eucharist</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="vignette"></div>
+
+<div id="ui">
+  <h2>The Gluttonous Saint</h2>
+  <div class="health-bar-bg"><div class="health-bar-fill" id="hp-bar"></div></div>
+  <div class="hud-text" id="run-sacraments">Current Run Sacraments: <span class="highlight">0</span></div>
+  <div class="hud-text" id="total-sacraments">Holy Blood Bank: <span class="gold">0</span></div>
+  <div class="hud-text">Blueprints Found: <span id="bp-display" class="blue">0</span></div>
+</div>
+
+<div id="timers">
+  <div class="hud-text">Room <span id="room-number">1</span></div>
+  <div class="timer-text" id="run-timer">00:00.00</div>
+  <div class="hud-text" style="color:#aaa;">Room: <span id="room-timer">00:00.00</span></div>
+</div>
+
+<div class="controls-help"><b>WASD</b>: Move/Jump | <b>SPACE</b>: Jump | <b>LEFT CLICK</b>: Attack | <b>SHIFT</b>: Roll | <b>RIGHT CLICK</b>: Parry | <b>Q</b>: Swap Wep | <b>E</b>: Interact | <b>ESC</b>: Menu</div>
+
+<div id="interact-prompt">[E] Interact</div>
+
+<!-- ALATAR UPGRADE MENU -->
+<div id="upgrade-menu" class="menu-panel">
+  <h1>Altar of Fervor</h1>
+  <div class="hud-text" style="margin-bottom: 20px;">Holy Blood Available: <span class="gold" id="upg-blood">0</span></div>
+  <div class="upg-row"><div><div class="upg-title">Vitality Lv.<span id="lvl-vit">0</span></div><div class="upg-desc">Increases Maximum Health.</div></div><button id="btn-vit" style="width:auto" onclick="window.buyUpgrade('vitality')">Cost: 10</button></div>
+  <div class="upg-row"><div><div class="upg-title">Fervor Lv.<span id="lvl-fer">0</span></div><div class="upg-desc">Increases Melee Damage.</div></div><button id="btn-fer" style="width:auto" onclick="window.buyUpgrade('fervor')">Cost: 15</button></div>
+  <div class="upg-row"><div><div class="upg-title">Fasting Lv.<span id="lvl-fas">0</span></div><div class="upg-desc">Increases Flesh Healing. Reduces passive drain.</div></div><button id="btn-fas" style="width:auto" onclick="window.buyUpgrade('fasting')">Cost: 20</button></div>
+  <button onclick="window.closeAllMenus()" style="margin-top: 15px;">Depart</button>
+</div>
+
+<!-- ALTER EGO SHOP -->
+<div id="shop-menu" class="menu-panel">
+  <h1>The Reflection</h1>
+  <p style="color:#aaa; font-style:italic;">"Ah... more meat for the mold. Hand over the blueprints, and I shall sculpt them into reality for a price."</p>
+  <div class="hud-text" style="margin-bottom: 20px;">Holy Blood: <span class="gold" id="shop-blood">0</span></div>
+  <div id="shop-items-container"></div>
+  <button onclick="window.closeAllMenus()" style="margin-top: 15px;">Leave the Mirror</button>
+</div>
+
+<!-- PLAYER MENU (ESC) -->
+<div id="player-menu" class="menu-panel">
+  <div style="text-align: left; margin-bottom: 20px;">
+    <div class="hud-text gold" style="border-bottom: 1px solid #d4af37; padding-bottom:5px; margin-bottom:10px;">Vessel Loadout</div>
+    <div class="upg-row"><span style="color:#fff;">Mainhand</span><select id="sel-mainhand" onchange="window.changeMainhand(this.value)"></select></div>
+    <div class="upg-row"><span style="color:#fff;">Offhand</span><select id="sel-offhand"><option value="none">Empty</option></select></div>
+    <div class="upg-row"><span style="color:#fff;">Headgear</span><select id="sel-head"><option value="halo">Crown of Thorns</option></select></div>
+    <div class="upg-row"><span style="color:#fff;">Shirt</span><select id="sel-shirt"><option value="rags">Bloody Rags</option></select></div>
+    <div class="upg-row"><span style="color:#fff;">Arms</span><select id="sel-arms"><option value="wraps">Linen Wraps</option></select></div>
+    <div class="upg-row"><span style="color:#fff;">Pants</span><select id="sel-pants"><option value="breeches">Leather Breeches</option></select></div>
+    <div class="upg-row"><span style="color:#fff;">Legs</span><select id="sel-legs"><option value="bare">Barefoot</option></select></div>
+    <div class="upg-row"><span style="color:#fff;">Cape</span><select id="sel-cape"><option value="tattered">Tattered Habit</option></select></div>
+  </div>
+
+  <div style="text-align: left;">
+    <div class="hud-text gold" style="border-bottom: 1px solid #d4af37; padding-bottom:5px; margin-bottom:10px;">Penance (Difficulty)</div>
+    <div style="display:flex; gap:5px;"><button onclick="window.setDiff('peckish')">Peckish</button><button onclick="window.setDiff('ravenous')">Ravenous</button><button onclick="window.setDiff('starving')">Starving</button></div>
+    <button onclick="window.toggleCustomDiff()" style="background:#0a0305; border-color:#d4af37; margin-top:5px;">Custom Penance...</button>
+    <div id="custom-diff-box" style="display:none;">
+      <label>Enemy HP: <span id="val-hp">1.0</span>x</label><input type="range" id="inp-hp" min="0.5" max="4.0" step="0.1" value="1.0" oninput="document.getElementById('val-hp').innerText=this.value">
+      <label>Enemy Dmg: <span id="val-dmg">1.0</span>x</label><input type="range" id="inp-dmg" min="0.5" max="4.0" step="0.1" value="1.0" oninput="document.getElementById('val-dmg').innerText=this.value">
+      <label><input type="checkbox" id="inp-hunger"> Passive Hunger Drain</label>
+      <button onclick="window.setDiff('custom')" style="margin-top: 10px;">Apply Custom</button>
+    </div>
+    <p style="color:#aaa; font-size:0.9rem; margin-top:10px;">Current Difficulty: <span id="current-diff-display" class="highlight">Peckish</span></p>
+  </div>
+  <button onclick="window.closeAllMenus()" style="margin-top: 15px; border-color:#555; color:#aaa; background: transparent;">Resume</button>
+</div>
+
+<!-- DEATH SCREEN -->
+<div id="death-screen">
+  <h1 id="death-title">STARVED OF SACRAMENT</h1>
+  <p class="hud-text" style="font-size: 1.5rem;">Sacraments Devoured: <span class="highlight" id="death-score">0</span></p>
+  <p class="hud-text" style="font-size: 1.2rem; color:#aaa;" id="death-time">Time: 00:00</p>
+  <button onclick="window.returnToHub()" style="font-size: 1.5rem; padding: 15px 30px; width:auto; margin-top: 30px;">Awaken in the Sanctuary</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<!-- MAIN SCRIPT MODULE -->
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
