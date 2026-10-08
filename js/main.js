@@ -1,5 +1,5 @@
 import { GameState } from './state.js';
-import { DIFFICULTY, META, COSTS, WEAPONS, ENEMY_TYPES, BIOMES, HUB_DATA, saveMeta } from './data.js';
+import { DIFFICULTY, META, COSTS, WEAPONS, ENEMY_TYPES, BIOMES, HUB_DATA, saveMeta, loadMeta } from './data.js';
 import { keys, justPressed, mouse } from './input.js';
 import { Player, Platform, Enemy, BlueprintDrop, FleshPickup, createParticles } from './entities.js';
 
@@ -84,8 +84,8 @@ window.changeMainhand = (wepId) => {
   if (GameState.player) {
     GameState.player.invIndex = GameState.player.inventory.findIndex(w => w.id === wepId); if (GameState.player.invIndex === -1) GameState.player.invIndex = 0;
     GameState.player.equipment.main = GameState.player.inventory[GameState.player.invIndex];
-    document.getElementById('weapon-display').innerText = GameState.player.equipment.main.name;
-    document.getElementById('weapon-display').style.color = GameState.player.equipment.main.color;
+    const weaponDisplay = document.getElementById('weapon-display');
+    if (weaponDisplay) { weaponDisplay.innerText = GameState.player.equipment.main.name; weaponDisplay.style.color = GameState.player.equipment.main.color; }
   }
 };
 
@@ -114,7 +114,8 @@ window.updateShopUI = () => {
 window.buyBlueprint = (bp) => { let wep = WEAPONS[bp]; if (META.blood >= wep.unlockCost) { META.blood -= wep.unlockCost; META.unlockedWeapons.push(bp); META.blueprints = META.blueprints.filter(b => b !== bp); saveMeta(); window.updateShopUI(); window.refreshLoadoutUI(); } };
 
 window.refreshLoadoutUI = () => {
-  let sel = document.getElementById('sel-mainhand'); sel.innerHTML = '';
+  let sel = document.getElementById('sel-mainhand'); if (!sel) return;
+  sel.innerHTML = '';
   META.unlockedWeapons.forEach(bp => { let wep = WEAPONS[bp]; let opt = document.createElement('option'); opt.value = wep.id; opt.innerText = wep.name; sel.appendChild(opt); });
   if(GameState.player && GameState.player.equipment && GameState.player.equipment.main) sel.value = GameState.player.equipment.main.id;
 };
@@ -223,4 +224,4 @@ function gameLoop(timestamp) {
   } else { requestAnimationFrame(gameLoop); }
 }
 
-window.refreshLoadoutUI(); window.loadLevel('HUB'); requestAnimationFrame(gameLoop);
+loadMeta(); window.refreshLoadoutUI(); window.loadLevel('HUB'); requestAnimationFrame(gameLoop);

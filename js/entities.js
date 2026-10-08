@@ -34,18 +34,24 @@ export class Player {
     this.isRolling = false; this.rollTimer = 0; this.rollMax = 0.35; this.rollCooldownTimer = 0; this.rollSpeed = 850;
     this.isParrying = false; this.parryTimer = 0; this.parryCooldownTimer = 0;
     
-    this.inventory = META.unlockedWeapons.map(id => WEAPONS[id]); this.invIndex = 0;
-    let selectedWepId = document.getElementById('sel-mainhand').value;
+    this.inventory = META.unlockedWeapons.map(id => WEAPONS[id]).filter(Boolean);
+    if (this.inventory.length === 0) this.inventory = [WEAPONS.blade];
+    this.invIndex = 0;
+    const mainhandEl = document.getElementById('sel-mainhand');
+    const selectedWepId = mainhandEl ? mainhandEl.value : this.inventory[0].id;
     this.invIndex = this.inventory.findIndex(w => w.id === selectedWepId); if (this.invIndex === -1) this.invIndex = 0;
-    this.equipment = { main: this.inventory[this.invIndex] }; 
+    this.equipment = { main: this.inventory[this.invIndex] || WEAPONS.blade };
     this.isAttacking = false; this.attackTimer = 0; this.attackCooldownTimer = 0; this.hasHit = false;
   }
   update(dt) {
     if (GameState.state === 'RUN' && DIFFICULTY.hungerDrain) { let drainRate = Math.max(0.2, 1.5 - (META.upgrades.fasting * 0.2)); this.hp -= drainRate * dt; }
     if (justPressed['q'] && !this.isAttacking && !this.isRolling && !this.isParrying) {
-      this.inventory = META.unlockedWeapons.map(id => WEAPONS[id]);
+      this.inventory = META.unlockedWeapons.map(id => WEAPONS[id]).filter(Boolean);
+      if (this.inventory.length === 0) this.inventory = [WEAPONS.blade];
       this.invIndex = (this.invIndex + 1) % this.inventory.length; this.equipment.main = this.inventory[this.invIndex];
-      document.getElementById('sel-mainhand').value = this.equipment.main.id; document.getElementById('weapon-display').innerText = this.equipment.main.name; document.getElementById('weapon-display').style.color = this.equipment.main.color;
+      const mainhandEl = document.getElementById('sel-mainhand'); const weaponDisplay = document.getElementById('weapon-display');
+      if (mainhandEl) mainhandEl.value = this.equipment.main.id;
+      if (weaponDisplay) { weaponDisplay.innerText = this.equipment.main.name; weaponDisplay.style.color = this.equipment.main.color; }
       createParticles(this.x + this.w/2, this.y + this.h/2, this.equipment.main.color, 15, 200);
     }
     if (this.attackCooldownTimer > 0) this.attackCooldownTimer -= dt; if (this.rollCooldownTimer > 0) this.rollCooldownTimer -= dt; if (this.parryCooldownTimer > 0) this.parryCooldownTimer -= dt;
